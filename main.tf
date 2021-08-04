@@ -34,4 +34,4 @@ resource "aws_subnet" "dev-subnet-2" {
                 Name = var.cidr_blocks[2].name
                 }
 	}
-#test
+
