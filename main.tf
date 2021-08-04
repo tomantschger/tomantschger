@@ -116,7 +116,7 @@ data "aws_ami" "latest-amazon-linux-image" {
 #	value =data.aws_ami.latest-amazon-linux-image.id
 #	}
 
-resource "aws_instance" "myapp-server" {
+resource "aws_instance" "myapp-server-nginx" {
 	ami = data.aws_ami.latest-amazon-linux-image.id
 	instance_type = var.instance_type
 	
@@ -127,20 +127,31 @@ resource "aws_instance" "myapp-server" {
 	associate_public_ip_address = true
 	key_name = "nginx"
 
-	user_data = <<EOF
-				#!/bin/bash
-				sudo yum update -y && sudo yum install -y docker
-				sudo systemctl start docker
-				sudo usermod -aG docker ec2-user
-				docker run -p 8080:80 nginx
-			EOF
-
+	user_data = file("entry-script-nginx.sh")
 
  	tags = {
-                Name: "${var.env_prefix}-server"
+                Name: "${var.env_prefix}-nginx-server"
                 }
+	}
 
-}
+resource "aws_instance" "myapp-server-juice-shop" {
+        ami = data.aws_ami.latest-amazon-linux-image.id
+        instance_type = var.instance_type
+
+        subnet_id = aws_subnet.myapp-subnet-1.id
+        vpc_security_group_ids = [aws_security_group.myapp-sg.id]
+        availability_zone = var.avail_zone
+
+        associate_public_ip_address = true
+        key_name = "nginx"
+
+        user_data = file("entry-script-juice-shop.sh")
+
+        tags = {
+                Name: "${var.env_prefix}-juice-shop-server"
+                }
+        }
+
 
 
 
